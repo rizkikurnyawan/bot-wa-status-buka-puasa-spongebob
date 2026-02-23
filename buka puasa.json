@@ -1,0 +1,219 @@
+{
+  "name": "buka puasa",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "* * * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2a140b37-1c42-44ec-b237-f6915e4a78d9",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== WIB TIMEZONE =====\nconst now = new Date(\n  new Date().toLocaleString(\"en-US\", { timeZone: \"Asia/Jakarta\" })\n);\n\nconst today = now.toISOString().slice(0, 10); // YYYY-MM-DD\nconst currentTime = now.toTimeString().slice(0, 5); // HH:mm\n\n// ===== JADWAL MAGRIB RAMADHAN =====\nconst magribSchedule = {\n  \"2026-02-19\": \"18:18\",\n  \"2026-02-20\": \"18:18\",\n  \"2026-02-21\": \"18:17\",\n  \"2026-02-22\": \"18:17\",\n  \"2026-02-23\": \"18:17\",\n  \"2026-02-24\": \"18:17\",\n  \"2026-02-25\": \"18:16\",\n  \"2026-02-26\": \"18:16\",\n  \"2026-02-27\": \"18:16\",\n  \"2026-02-28\": \"18:15\",\n  \"2026-03-01\": \"18:15\",\n  \"2026-03-02\": \"18:14\",\n  \"2026-03-03\": \"18:14\",\n  \"2026-03-04\": \"18:14\",\n  \"2026-03-05\": \"18:13\",\n  \"2026-03-06\": \"18:13\",\n  \"2026-03-07\": \"18:12\",\n  \"2026-03-08\": \"18:12\",\n  \"2026-03-09\": \"18:12\",\n  \"2026-03-10\": \"18:11\",\n  \"2026-03-11\": \"18:11\",\n  \"2026-03-12\": \"18:10\",\n  \"2026-03-13\": \"18:10\",\n  \"2026-03-14\": \"18:09\",\n  \"2026-03-15\": \"18:09\",\n  \"2026-03-16\": \"18:09\",\n  \"2026-03-17\": \"18:08\",\n  \"2026-03-18\": \"18:08\",\n  \"2026-03-19\": \"18:07\",\n  \"2026-03-20\": \"18:07\"\n};\n\nconst magribTime = magribSchedule[today];\n\n// Kalau bukan hari Ramadhan → stop\nif (!magribTime) {\n  return [];\n}\n\nreturn [{\n  json: {\n    date: today,\n    currentTime,\n    magribTime,\n    shouldSend: currentTime === magribTime\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -64
+      ],
+      "id": "fd56d325-e9d7-43d9-bb28-66bf2651d800",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "17c04645-42e8-4755-aa35-3f931b942154",
+              "leftValue": "={{ $json.shouldSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        -48
+      ],
+      "id": "f5a8ba2b-4dfe-4094-84c5-f8af8a7c1018",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "=\"buka puasa\"",
+        "limit": 1,
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        752,
+        -64
+      ],
+      "id": "21a18d3f-d491-4fc2-a7c0-a0951314967a",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "kGr7j8qacs9pUo47",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        960,
+        -96
+      ],
+      "id": "8d6dcc0b-097a-4f37-ac3e-c3638f49fb26",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "kGr7j8qacs9pUo47",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Status",
+        "operation": "Send Image Status",
+        "session": "=lokal2",
+        "file": "={\n  \"mimetype\": \"image/jpeg\",\n  \"filename\": \"{{ $binary.data.fileName }}\",\n  \"url\": \"https://drive.google.com/uc?id={{ $json.id }}\"\n}\n",
+        "contacts": "=",
+        "caption": "=Azan Magrib Hari ini : {{ $('Code in JavaScript').item.json.magribTime }}\n ",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1248,
+        -176
+      ],
+      "id": "938f1981-5ab0-4875-95e2-7acac6acf9c8",
+      "name": "Send image status",
+      "credentials": {
+        "wahaApi": {
+          "id": "Rm8z1bagoP0n78Ru",
+          "name": "WAHA account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Send image status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send image status": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "f3ae008f-1057-466b-b384-e3bddecfff05",
+  "meta": {
+    "instanceId": "b9014a0f0bad5e65dab0f2b82afe190e311884bd31533646c7ea00317b161dbc"
+  },
+  "id": "p4YmVXZOU5Ns8CUF0108U",
+  "tags": []
+}
