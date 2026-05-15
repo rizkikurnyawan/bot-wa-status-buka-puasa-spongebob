@@ -1,7 +1,8 @@
 # bot-wa-status-buka-puasa-spongebob
 bot wa status buka puasa spongebob menggunakan n8n dan waha
 
-![Uploading Bot Status Spongebob.png…]()
+<img width="1603" height="656" alt="Bot Status Spongebob" src="https://github.com/user-attachments/assets/ce5799a9-ded6-4b0a-8a91-980644a8e4c6" />
+
 
 
 <img width="720" height="1600" alt="true_129987571101836@lid_AC7C58931C993327B03B21FB6A9E6301" src="https://github.com/user-attachments/assets/789c23de-b8f9-48b7-90bc-80c94742032b" />
